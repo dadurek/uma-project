@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+ROUNDING_AMOUNT = 3
 
 class Node():
 
@@ -79,18 +80,18 @@ class Node():
                 right_y = d[d[feature] >= x]['Y'].values
                 mse = self.get_mse_for_two_vectors(left_y, right_y)
                 mses.append(mse)
-        len_df = len(d['Y'].to_list())
-
         best_index = self.roulette(mses)
-        feature_index = int(best_index / len_df)
-        feature = self.features[feature_index]
 
-        x_mean_index = int(best_index % len_df)
+        # length of x_means, because x_mean is vector means of neighbours in X vector, so it's one element less than X or Y
+        size_x_means = len(d['Y'].to_list()) - 1
+        feature_index = int(best_index / size_x_means)
+        feature = self.features[feature_index]
+        x_mean_index = int(best_index % size_x_means)
         x_mean = self.neighbours_mean(d[feature].to_list())[x_mean_index]
 
         return feature, x_mean
 
-    def grow_tree(self):
+    def grow_regression_tree(self):
         df = self.X.copy()
         df['Y'] = self.Y
         if self.depth < self.max_depth and self.elements >= self.min_elements:
@@ -104,12 +105,12 @@ class Node():
                 max_depth=self.max_depth,
                 min_elements=self.min_elements,
                 depth=self.depth + 1,
-                node_type = 'left_node',
-                rule = f"{feature} <= {round(x_mean, 3)}"
+                node_type='left_node',
+                rule=f"{feature} <= {round(x_mean, ROUNDING_AMOUNT)}"
             )
 
             self.left = left
-            self.left.grow_tree()
+            self.left.grow_regression_tree()
 
             right = Node(
                 right_df[self.features],
@@ -118,73 +119,53 @@ class Node():
                 min_elements=self.min_elements,
                 depth=self.depth + 1,
                 node_type='right_node',
-                rule=f"{feature} > {round(x_mean, 3)}"
+                rule=f"{feature} > {round(x_mean, ROUNDING_AMOUNT)}"
             )
 
             self.right = right
-            self.right.grow_tree()
+            self.right.grow_regression_tree()
 
-    def print_info(self, width=4):
-        """
-        Method to print the infromation about the tree
-        """
-        # Defining the number of spaces
-        const = int(self.depth * width ** 1.5)
-        spaces = "-" * const
+    def print_info(self, width=3):
+        const = int(self.depth * width ** 2)
+        padding = "-" * const
 
         if self.node_type == 'root':
-            print("Root")
+            print(self.node_type)
         else:
-            print(f"|{spaces} Split rule: {self.rule}")
-        print(f"{' ' * const}   | MSE of the node: {round(self.mse, 2)}")
-        print(f"{' ' * const}   | Count of observations in node: {self.elements}")
-        print(f"{' ' * const}   | Prediction of node: {round(self.ymean, 3)}")
+            print(f"|{padding} Split rule: {self.rule}")
 
-    def print_tree(self):
-        """
-        Prints the whole tree from the current node to the bottom
-        """
+        print(f"{' ' * const}   | Type : {self.node_type}")
+        print(f"{' ' * const}   | MSE of the node : {round(self.mse, ROUNDING_AMOUNT)}")
+        print(f"{' ' * const}   | Count of observations in node : {self.elements}")
+        print(f"{' ' * const}   | Prediction of node : {round(self.ymean, ROUNDING_AMOUNT)}")
+        print(f"{' ' * const}   | Remaining elements : {self.elements}")
+
+    def print_regression_tree(self):
         self.print_info()
 
         if self.left is not None:
-            self.left.print_tree()
+            self.left.print_regression_tree()
 
         if self.right is not None:
-            self.right.print_tree()
+            self.right.print_regression_tree()
 
-def predict():
+
+def initialize_tree(X: pd.core.frame.DataFrame,
+                    Y: list,
+                    max_depth: int,
+                    min_elements: int):
+    root = Node(X=X, Y=Y, max_depth=max_depth, min_elements=min_elements)
+    return root
+
+
+def grow_tree(root: Node):
+    root.grow_regression_tree()
+    return root
+
+
+def print_tree(root: Node):
+    root.print_regression_tree()
+
+
+def predict(df: pd.core.frame.DataFrame, root: Node):
     pass
-
-# if __name__ == '__main__':
-#     quantity_from_csv = 1000
-#     max_depth = 3
-#     min_elements = 3
-#     file_path = "housing.csv"
-#     to_estimate = "median_house_value"
-#     # features = ['longitude', 'latitude', 'housing_median_age', 'total_rooms', 'total_bedrooms', 'population',
-#     #             'households', 'median_income', 'ocean_proximity']
-#     features = ['housing_median_age', 'total_rooms', 'total_bedrooms', 'population',
-#                 'households', 'median_income', 'ocean_proximity']
-#     ocean_proximity_dict = {'NEAR BAY': 1, '<1H OCEAN': 2, 'INLAND': 3, 'NEAR OCEAN': 4, 'ISLAND': 5}
-#
-#     df = pd.read_csv(file_path)
-#
-#     # cast ocean_proximity to numeric number
-#     df[features[-1]] = pd.Series(ocean_proximity_dict[i] for i in df[features[-1]])
-#
-#     df.dropna(subset=features, inplace=True)
-#
-#     # cast to numeric
-#     for ft in features:
-#         df[ft] = pd.to_numeric(df[ft])
-#
-#     # pick defined quantity TODO maybe mix elements here as they are in order of  longitude
-#     df = df.head(quantity_from_csv)
-#     X = df[features]  # set of features
-#     Y = df[to_estimate].values.tolist()  # continous variable
-#
-#     root = Node(X=X, Y=Y, max_depth=max_depth, min_elements=min_elements)
-#
-#     root.grow_tree()
-#
-#     root.print_tree()

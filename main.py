@@ -1,40 +1,54 @@
 from regressionTree import *
+import pandas as pd
 
 
-
-if __name__ == '__main__':
-    # remember about `ocean_proximity` where we need to change string values to numeric
-
-    quantity_from_csv = 1000
-    max_depth = 3
-    min_elements = 3
-
-    file_path = "housing.csv"
-    to_estimate = "median_house_value"
-    # features = ['longitude', 'latitude', 'housing_median_age', 'total_rooms', 'total_bedrooms', 'population',
-    #             'households', 'median_income', 'ocean_proximity']
-    features = ['housing_median_age', 'total_rooms', 'total_bedrooms', 'population',
-                'households', 'median_income', 'ocean_proximity']
+def prepare_df(file_path: str, to_estimate: str, features: list, size: int) -> pd.core.frame.DataFrame:
+    df = pd.read_csv(file_path)
     ocean_proximity_dict = {'NEAR BAY': 1, '<1H OCEAN': 2, 'INLAND': 3, 'NEAR OCEAN': 4, 'ISLAND': 5}
 
-    df = pd.read_csv(file_path)
-
     # cast ocean_proximity to numeric number
-    df[features[-1]] = pd.Series(ocean_proximity_dict[i] for i in df[features[-1]])
+    if 'ocean_proximity' in features:
+        df['ocean_proximity'] = pd.Series(ocean_proximity_dict[i] for i in df['ocean_proximity'])
 
-    df.dropna(subset=features, inplace=True)
+    # drop na values for both estimating value and features
+    df.dropna(subset=np.concatenate((to_estimate, features), axis=None), inplace=True)
 
     # cast to numeric
     for ft in features:
         df[ft] = pd.to_numeric(df[ft])
 
-    # pick defined quantity TODO maybe mix elements here as they are in order of  longitude
-    df = df.head(quantity_from_csv)
-    X = df[features]  # set of features
-    Y = df[to_estimate].values.tolist()  # continous variable
+    # always pick random sample with
+    df = df.sample(size)
 
-    root = Node(X=X, Y=Y, max_depth=max_depth, min_elements=min_elements)
+    return df
 
-    root.grow_tree()
 
-    root.print_tree()
+def prepare_data(df: pd.core.frame.DataFrame) -> tuple:
+    # set of features
+    X = df[features]
+
+    # continous variable
+    Y = df[to_estimate].values.tolist()
+
+    return X, Y
+
+
+if __name__ == '__main__':
+    quantity_from_csv = 100
+    max_depth = 3
+    min_elements = 3
+
+    file_path = "housing.csv"
+    to_estimate = "median_house_value"
+    features = ['housing_median_age', 'total_rooms', 'total_bedrooms', 'population',
+                'households', 'median_income', 'ocean_proximity']
+
+    dataFrame = prepare_df(file_path=file_path, to_estimate=to_estimate, features=features, size=quantity_from_csv)
+
+    X, Y = prepare_data(dataFrame)
+
+    tree = initialize_tree(X=X, Y=Y, max_depth=max_depth, min_elements=min_elements)
+
+    grow_tree(tree)
+
+    print_tree(tree)
