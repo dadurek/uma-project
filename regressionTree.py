@@ -1,7 +1,15 @@
 import numpy as np
 import pandas as pd
+from enum import Enum
 
 ROUNDING_AMOUNT = 3
+
+
+class Type(Enum):
+    ROOT = 'root'
+    LEFT = 'left'
+    RIGHT = 'right'
+
 
 class Node():
 
@@ -12,8 +20,9 @@ class Node():
             max_depth: int,
             min_elements: int,
             depth=None,
-            node_type=None,
-            rule=None
+            type=None,
+            x_mean=None,
+            feature=None
     ):
         self.X = X
         self.Y = Y
@@ -24,9 +33,10 @@ class Node():
         self.features = self.X.columns.tolist()
         self.mse = self.get_mse(self.Y)
 
-        self.ymean = np.mean(self.Y)
-        self.node_type = node_type if node_type else 'root'
-        self.rule = rule if rule else ""
+        self.y_mean = np.mean(self.Y)
+        self.x_mean = x_mean if x_mean else 0
+        self.feature = feature if feature else ''
+        self.type = type if type else Type.ROOT
 
         self.left = None
         self.right = None
@@ -91,7 +101,7 @@ class Node():
 
         return feature, x_mean
 
-    def grow_regression_tree(self):
+    def grow_tree(self):
         df = self.X.copy()
         df['Y'] = self.Y
         if self.depth < self.max_depth and self.elements >= self.min_elements:
@@ -105,12 +115,13 @@ class Node():
                 max_depth=self.max_depth,
                 min_elements=self.min_elements,
                 depth=self.depth + 1,
-                node_type='left_node',
-                rule=f"{feature} <= {round(x_mean, ROUNDING_AMOUNT)}"
+                type=Type.LEFT,
+                x_mean=x_mean,
+                feature=feature
             )
 
             self.left = left
-            self.left.grow_regression_tree()
+            self.left.grow_tree()
 
             right = Node(
                 right_df[self.features],
@@ -118,54 +129,39 @@ class Node():
                 max_depth=self.max_depth,
                 min_elements=self.min_elements,
                 depth=self.depth + 1,
-                node_type='right_node',
-                rule=f"{feature} > {round(x_mean, ROUNDING_AMOUNT)}"
+                type=Type.RIGHT,
+                x_mean=x_mean,
+                feature=feature
             )
 
             self.right = right
-            self.right.grow_regression_tree()
+            self.right.grow_tree()
 
-    def print_info(self, width=3):
+    def print_node(self, width=3):
         const = int(self.depth * width ** 2)
         padding = "-" * const
 
-        if self.node_type == 'root':
-            print(self.node_type)
+        if self.type is Type.ROOT:
+            print(self.type.value)
         else:
-            print(f"|{padding} Split rule: {self.rule}")
+            if self.type is Type.LEFT:
+                print(f"|{padding} Split rule: {self.feature} <= {round(self.x_mean, ROUNDING_AMOUNT)}")
+            else:
+                print(f"|{padding} Split rule: {self.feature} > {round(self.x_mean, ROUNDING_AMOUNT)}")
 
-        print(f"{' ' * const}   | Type : {self.node_type}")
+        print(f"{' ' * const}   | Type : {self.type.value}")
         print(f"{' ' * const}   | MSE of the node : {round(self.mse, ROUNDING_AMOUNT)}")
         print(f"{' ' * const}   | Count of observations in node : {self.elements}")
-        print(f"{' ' * const}   | Prediction of node : {round(self.ymean, ROUNDING_AMOUNT)}")
+        print(f"{' ' * const}   | Prediction of node : {round(self.y_mean, ROUNDING_AMOUNT)}")
         print(f"{' ' * const}   | Remaining elements : {self.elements}")
+        print(f"{' ' * const}   | x_mean value : {self.x_mean}")
 
-    def print_regression_tree(self):
-        self.print_info()
+    def print_tree(self):
+        self.print_node()
 
         if self.left is not None:
-            self.left.print_regression_tree()
+            self.left.print_tree()
 
         if self.right is not None:
-            self.right.print_regression_tree()
+            self.right.print_tree()
 
-
-def initialize_tree(X: pd.core.frame.DataFrame,
-                    Y: list,
-                    max_depth: int,
-                    min_elements: int):
-    root = Node(X=X, Y=Y, max_depth=max_depth, min_elements=min_elements)
-    return root
-
-
-def grow_tree(root: Node):
-    root.grow_regression_tree()
-    return root
-
-
-def print_tree(root: Node):
-    root.print_regression_tree()
-
-
-def predict(df: pd.core.frame.DataFrame, root: Node):
-    pass

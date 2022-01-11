@@ -18,7 +18,7 @@ def prepare_df(file_path: str, to_estimate: str, features: list, size: int) -> p
         df[ft] = pd.to_numeric(df[ft])
 
     # always pick random sample with
-    df = df.sample(size)
+    df = df.sample(size) # TODO decide if we use head() or sample()
 
     return df
 
@@ -47,8 +47,14 @@ if __name__ == '__main__':
 
     X, Y = prepare_data(dataFrame)
 
-    tree = initialize_tree(X=X, Y=Y, max_depth=max_depth, min_elements=min_elements)
+    tree = Node(X=X, Y=Y, max_depth=max_depth, min_elements=min_elements)
+    tree.grow_tree()
+    tree.print_tree()
 
-    grow_tree(tree)
+    dataFrame = dataFrame.head(50)
 
-    print_tree(tree)
+
+
+    tree.predict(dataFrame)
+
+
