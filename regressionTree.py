@@ -33,7 +33,7 @@ class Node:
         self.depth = depth if depth else 0
         self.elements = len(Y)
         self.features = self.X.columns.tolist()
-        self.mse = self.get_mse(self.Y)
+        self.mse = self.__get_mse(self.Y)
         self.y_mean = np.mean(self.Y)
         self.x_mean = x_mean if x_mean else 0
         self.feature = feature if feature else ''
@@ -43,7 +43,14 @@ class Node:
         self.right = None
 
     @staticmethod
-    def get_mse(y: list) -> float:
+    def configure(roulette_option=ROULETTE_ENABLED, rounding_amount=ROUNDING_AMOUNT, width_print=WIDTH_PRINT):
+        """configuration function, provide option to change settings used in this module"""
+        Node.ROULETTE_ENABLED = roulette_option
+        Node.ROUNDING_AMOUNT = rounding_amount
+        Node.WIDTH_PRINT = width_print
+
+    @staticmethod
+    def __get_mse(y: list) -> float:
         """calculate mse of list"""
         y_mean = np.mean(y)
         elements = len(y)
@@ -51,7 +58,7 @@ class Node:
         return np.sum(residuals) / elements
 
     @staticmethod
-    def get_mse_for_two_vectors(left_y: list, right_y: list) -> float:
+    def __get_mse_for_two_vectors(left_y: list, right_y: list) -> float:
         """calculate mse of two lists"""
         left_mean = np.mean(left_y)
         right_mean = np.mean(right_y)
@@ -63,7 +70,7 @@ class Node:
         return np.sum(residuals) / elements
 
     @staticmethod
-    def pick_mse(mses: list) -> int:  # return index of picked mse
+    def __pick_mse(mses: list) -> int:  # return index of picked mse
         """return index of picked mse, based on value ROULETTE_ENABLED return by roulette or highest probability"""
         fitness = []
         probability = []
@@ -80,14 +87,7 @@ class Node:
             return np.argmax(probability)
 
     @staticmethod
-    def configure(roulette_option=ROULETTE_ENABLED, rounding_amount=ROUNDING_AMOUNT, width_print=WIDTH_PRINT):
-        """configuration function, provide option to change settings used in this module"""
-        Node.ROULETTE_ENABLED = roulette_option
-        Node.ROUNDING_AMOUNT = rounding_amount
-        Node.WIDTH_PRINT = width_print
-
-    @staticmethod
-    def neighbours_mean(x: list) -> list:
+    def __neighbours_mean(x: list) -> list:
         """return list of neighbours from provided list"""
         x.sort()
         x_means = []
@@ -95,28 +95,28 @@ class Node:
             x_means.append(np.mean([x[i], x[i + 1]]))
         return x_means
 
-    def split(self) -> tuple:
+    def __split(self) -> tuple:
         """decide which feature use to split X vector and provide value to split"""
         d = self.X.copy()
         d['Y'] = self.Y
         mses = []
 
         for feature in self.features:
-            x_means = self.neighbours_mean(d[feature].to_list())
+            x_means = self.__neighbours_mean(d[feature].to_list())
             for x in x_means:
                 left_y = d[d[feature] < x]['Y'].values
                 right_y = d[d[feature] >= x]['Y'].values
-                mse = self.get_mse_for_two_vectors(left_y, right_y)
+                mse = self.__get_mse_for_two_vectors(left_y, right_y)
                 mses.append(mse)
 
-        best_index = self.pick_mse(mses)
+        best_index = self.__pick_mse(mses)
 
         # length of x_means, because x_mean is vector means of neighbours in X vector, so it's one element less than X or Y
         size_x_means = len(d['Y'].to_list()) - 1
         feature_index = int(best_index / size_x_means)
         feature = self.features[feature_index]
         x_mean_index = int(best_index % size_x_means)
-        x_mean = self.neighbours_mean(d[feature].to_list())[x_mean_index]
+        x_mean = self.__neighbours_mean(d[feature].to_list())[x_mean_index]
 
         return feature, x_mean
 
@@ -125,7 +125,7 @@ class Node:
         df = self.X.copy()
         df['Y'] = self.Y
         if self.depth < self.max_depth and self.elements >= self.min_elements:
-            feature, x_mean = self.split()
+            feature, x_mean = self.__split()
 
             left_df = df[df[feature] <= x_mean].copy()
             right_df = df[df[feature] > x_mean].copy()
@@ -157,7 +157,26 @@ class Node:
             self.right = right
             self.right.grow()
 
-    def print_node(self):
+    def predict(self, df: pd.core.frame.DataFrame, new_column_name: str) -> pd.core.frame.DataFrame:
+        """predict value based on generated tree"""
+        df[new_column_name] = 0
+        for index, row in df.iterrows():
+            value = self.__recursive_y_mean_search(row=row)
+            df[new_column_name][index] = value
+        return df
+
+    def __recursive_y_mean_search(self, row: pd.core.series.Series):
+        """recursive search of y_mean"""
+        while self.left is not None and self.right is not None:
+            feature = self.left.feature if self.left.feature else self.right.feature  # pick left feature, if it does not exist pick feature from right
+            x_mean = self.left.x_mean if self.left.x_mean else self.right.x_mean  # pick left x_mean, if it does not exist pick x_mean from right
+            if row[feature] <= x_mean:  # left
+                return self.left.__recursive_y_mean_search(row=row)
+            elif row[feature] > x_mean:  # right
+                return self.right.__recursive_y_mean_search(row=row)
+        return self.y_mean
+
+    def __print_node(self):
         """print node based on type od node"""
         const = int(self.depth * Node.WIDTH_PRINT)
         padding = "-" * const
@@ -179,29 +198,10 @@ class Node:
 
     def print_tree(self):
         """recursive function of printing tree"""
-        self.print_node()
+        self.__print_node()
 
         if self.left is not None:
             self.left.print_tree()
 
         if self.right is not None:
             self.right.print_tree()
-
-    def predict(self, df: pd.core.frame.DataFrame, new_column_name: str) -> pd.core.frame.DataFrame:
-        """predict value based on generated tree"""
-        df[new_column_name] = 0
-        for index, row in df.iterrows():
-            value = self.recursive(row=row)
-            df[new_column_name][index] = value
-        return df
-
-    def recursive(self, row: pd.core.series.Series):
-        """recursive search of y_mean"""
-        while self.left is not None and self.right is not None:
-            feature = self.left.feature if self.left.feature else self.right.feature  # pick left feature, if it does not exist pick feature from right
-            x_mean = self.left.x_mean if self.left.x_mean else self.right.x_mean  # pick left x_mean, if it does not exist pick x_mean from right
-            if row[feature] <= x_mean:  # left
-                return self.left.recursive(row=row)
-            elif row[feature] > x_mean:  # right
-                return self.right.recursive(row=row)
-        return self.y_mean
