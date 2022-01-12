@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 def prepare_data_frame(file_path: str, columns_name: list, size: int) -> pd.core.frame.DataFrame:
@@ -30,3 +31,9 @@ def prepare_data(df: pd.core.frame.DataFrame, to_estimate: str, features: list, 
     Y = df[to_estimate].values.tolist()
 
     return X, Y
+
+
+def compute_error(df: pd.core.frame.DataFrame, true_value: str, predicted: str) -> float:
+    df['new'] = 0
+    vector = (abs((df[true_value] - df[predicted]) / df[true_value])).to_list()
+    return np.mean(vector)

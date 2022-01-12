@@ -17,14 +17,13 @@ This project is implementation of regression tree using roulette to choose the s
 
 # Help functions
 
-* `dataFrame = prepare_data_frame(file_path=file_path, columns_name=np.concatenate((to_estimate, features), axis=None), size=quantity_from_csv)` - return datafram from file and parse this data
-* `X, Y = prepare_data(df=dataFrame, to_estimate=to_estimate, features=features)` - return X and Y vectors needed to generate regression tree
+* `dataFrame = prepare_data_frame(file_path=file_path, columns_name=np.concatenate((to_estimate_column_name, features_columns_name), axis=None), size=quantity_from_csv)` - return datafram from file and parse this data
+* `X, Y = prepare_data(df=dataFrame, to_estimate=to_estimate_column_name, features=features_columns_name)` - return X and Y vectors needed to generate regression tree
+* `error = compute_error(df=dataFrame, true_value=to_estimate_column_name, predicted=predicted_values_column_name` - compute error
 
 # Usage
 
 * `tree = Node(X=X, Y=Y, max_depth=max_depth, min_elements=min_elements)` - initialize root of tree
 * `tree.grow()` - generate tree
 * `tree.print_tree()` - print tree
-* `tree.predict(df=dataFrame, new_column_name=new_column_name)` - predict estimated value, add new column with predicted value
-* `someetig to calculate error` - 
-
+* `tree.predict(df=dataFrame, new_column_name=predicted_values_column_name)` - predict estimated value, add new column with predicted value
