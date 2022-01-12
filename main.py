@@ -1,36 +1,5 @@
 from regressionTree import *
-import pandas as pd
-
-
-def prepare_df(file_path: str, to_estimate: str, features: list, size: int) -> pd.core.frame.DataFrame:
-    df = pd.read_csv(file_path)
-    ocean_proximity_dict = {'NEAR BAY': 1, '<1H OCEAN': 2, 'INLAND': 3, 'NEAR OCEAN': 4, 'ISLAND': 5}
-
-    # cast ocean_proximity to numeric number
-    if 'ocean_proximity' in features:
-        df['ocean_proximity'] = pd.Series(ocean_proximity_dict[i] for i in df['ocean_proximity'])
-
-    # drop na values for both estimating value and features
-    df.dropna(subset=np.concatenate((to_estimate, features), axis=None), inplace=True)
-
-    # cast to numeric
-    for ft in features:
-        df[ft] = pd.to_numeric(df[ft])
-
-    # always pick random sample with
-    df = df.head(size)  # TODO decide if we use head() or sample()
-
-    return df
-
-
-def prepare_data(df: pd.core.frame.DataFrame) -> tuple:
-    # set of features
-    X = df[features]
-
-    # continuous variable
-    Y = df[to_estimate].values.tolist()
-
-    return X, Y
+from prepareData import *
 
 
 if __name__ == '__main__':
@@ -43,14 +12,13 @@ if __name__ == '__main__':
     features = ['housing_median_age', 'total_rooms', 'total_bedrooms', 'population',
                 'households', 'median_income', 'ocean_proximity']
 
-    dataFrame = prepare_df(file_path=file_path, to_estimate=to_estimate, features=features, size=quantity_from_csv)
+    dataFrame = prepare_data_frame(file_path=file_path, columns_name=np.concatenate((to_estimate, features), axis=None), size=quantity_from_csv)
 
-    X, Y = prepare_data(dataFrame)
+    X, Y = prepare_data(df=dataFrame, to_estimate=to_estimate, features=features)
 
     tree = Node(X=X, Y=Y, max_depth=max_depth, min_elements=min_elements)
 
-    tree.configure(
-        roulette_option=True)  # enable roulette, if false in function best_split() picked will be value with highest probability
+    tree.configure(roulette_option=True)  # enable roulette, if false in function best_split() picked will be value with highest probability
     tree.configure(rounding_amount=4) # amount of rounding of values when printing tree
     tree.configure(width_print=9) # spaces padding when printing tree
     tree.configure(roulette_option=True, rounding_amount=4, width_print=9)
@@ -62,9 +30,9 @@ if __name__ == '__main__':
 
     new_column_name = 'estimated'
 
-    # tree.predict(df=dataFrame, new_column_name=new_column_name)
-    #
-    # for index, row in dataFrame.iterrows():
-    #     print("real value: " + str(row[to_estimate]))
-    #     print("estimated value: " + str(row[new_column_name]))
-    #     print("-------------------")
+    tree.predict(df=dataFrame, new_column_name=new_column_name)
+
+    for index, row in dataFrame.iterrows():
+        print("real value: " + str(row[to_estimate]))
+        print("estimated value: " + str(row[new_column_name]))
+        print("-------------------")
