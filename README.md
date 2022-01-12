@@ -1,4 +1,4 @@
-# uma-project
+# Implementation or regression tree using roulette as test
 
 ### Authors
 - Marcin Dadura
@@ -26,5 +26,5 @@ This project is implementation of regression tree using roulette to choose the s
 * `tree.grow()` - generate tree
 * `tree.print_tree()` - print tree
 * `tree.predict(df=dataFrame, new_column_name=new_column_name)` - predict estimated value, add new column with predicted value
-* '' - 
+* `someetig to calculate error` - 
 
