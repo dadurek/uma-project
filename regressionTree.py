@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
+import random as rand
 from enum import Enum
-
-ROUNDING_AMOUNT = 3
 
 
 class Type(Enum):
@@ -12,6 +11,9 @@ class Type(Enum):
 
 
 class Node:
+    ROUNDING_AMOUNT = 3
+    WIDTH_PRINT = 9
+    ROULETTE_ENABLED = True
 
     def __init__(
             self,
@@ -32,7 +34,6 @@ class Node:
         self.elements = len(Y)
         self.features = self.X.columns.tolist()
         self.mse = self.get_mse(self.Y)
-
         self.y_mean = np.mean(self.Y)
         self.x_mean = x_mean if x_mean else 0
         self.feature = feature if feature else ''
@@ -43,6 +44,7 @@ class Node:
 
     @staticmethod
     def get_mse(y: list) -> float:
+        """calculate mse of list"""
         y_mean = np.mean(y)
         elements = len(y)
         residuals = (y - y_mean) ** 2
@@ -50,6 +52,7 @@ class Node:
 
     @staticmethod
     def get_mse_for_two_vectors(left_y: list, right_y: list) -> float:
+        """calculate mse of two lists"""
         left_mean = np.mean(left_y)
         right_mean = np.mean(right_y)
         residuals_left = left_y - left_mean
@@ -60,7 +63,8 @@ class Node:
         return np.sum(residuals) / elements
 
     @staticmethod
-    def roulette(mses: list) -> int:  # return index of best
+    def pick_mse(mses: list) -> int:  # return index of picked mse
+        """return index of picked mse, based on value ROULETTE_ENABLED return by roulette or highest probability"""
         fitness = []
         probability = []
         for mse in mses:
@@ -68,17 +72,31 @@ class Node:
         s = np.nansum(fitness)
         for f in fitness:
             probability.append(f / s)
-        return np.argmax(probability)
+
+        if Node.ROULETTE_ENABLED:
+            picked_value = rand.choices(population=mses, weights=probability)
+            return mses.index(picked_value)
+        else:
+            return np.argmax(probability)
 
     @staticmethod
-    def neighbours_mean(x: list) -> list:  # TODO make it bulletproof
+    def configure(roulette_option=ROULETTE_ENABLED, rounding_amount=ROUNDING_AMOUNT, width_print=WIDTH_PRINT):
+        """configuration function, provide option to change settings used in this module"""
+        Node.ROULETTE_ENABLED = roulette_option
+        Node.ROUNDING_AMOUNT = rounding_amount
+        Node.WIDTH_PRINT = width_print
+
+    @staticmethod
+    def neighbours_mean(x: list) -> list:
+        """return list of neighbours from provided list"""
         x.sort()
         x_means = []
         for i in range(0, len(x) - 1):
             x_means.append(np.mean([x[i], x[i + 1]]))
         return x_means
 
-    def best_split(self) -> tuple:
+    def split(self) -> tuple:
+        """decide which feature use to split X vector and provide value to split"""
         d = self.X.copy()
         d['Y'] = self.Y
         mses = []
@@ -90,7 +108,8 @@ class Node:
                 right_y = d[d[feature] >= x]['Y'].values
                 mse = self.get_mse_for_two_vectors(left_y, right_y)
                 mses.append(mse)
-        best_index = self.roulette(mses)
+
+        best_index = self.pick_mse(mses)
 
         # length of x_means, because x_mean is vector means of neighbours in X vector, so it's one element less than X or Y
         size_x_means = len(d['Y'].to_list()) - 1
@@ -101,11 +120,12 @@ class Node:
 
         return feature, x_mean
 
-    def grow_tree(self):
+    def grow(self):
+        """grow regression tree"""
         df = self.X.copy()
         df['Y'] = self.Y
         if self.depth < self.max_depth and self.elements >= self.min_elements:
-            feature, x_mean = self.best_split()
+            feature, x_mean = self.split()
 
             left_df = df[df[feature] <= x_mean].copy()
             right_df = df[df[feature] > x_mean].copy()
@@ -121,7 +141,7 @@ class Node:
             )
 
             self.left = left
-            self.left.grow_tree()
+            self.left.grow()
 
             right = Node(
                 right_df[self.features],
@@ -135,28 +155,30 @@ class Node:
             )
 
             self.right = right
-            self.right.grow_tree()
+            self.right.grow()
 
-    def print_node(self, width=3):
-        const = int(self.depth * width ** 2)
+    def print_node(self):
+        """print node based on type od node"""
+        const = int(self.depth * Node.WIDTH_PRINT)
         padding = "-" * const
 
         if self.type is Type.ROOT:
-            print(self.type.value)
+            print(f"Start : {self.type.value}")
         else:
             if self.type is Type.LEFT:
-                print(f"|{padding} Split rule: {self.feature} <= {round(self.x_mean, ROUNDING_AMOUNT)}")
+                print(f"|{padding} Split rule: {self.feature} <= {round(self.x_mean, self.ROUNDING_AMOUNT)}")
             else:
-                print(f"|{padding} Split rule: {self.feature} > {round(self.x_mean, ROUNDING_AMOUNT)}")
+                print(f"|{padding} Split rule: {self.feature} > {round(self.x_mean, self.ROUNDING_AMOUNT)}")
 
         print(f"{' ' * const}   | Type : {self.type.value}")
-        print(f"{' ' * const}   | MSE of the node : {round(self.mse, ROUNDING_AMOUNT)}")
+        print(f"{' ' * const}   | MSE of the node : {round(self.mse, self.ROUNDING_AMOUNT)}")
         print(f"{' ' * const}   | Count of observations in node : {self.elements}")
-        print(f"{' ' * const}   | Prediction of node : {round(self.y_mean, ROUNDING_AMOUNT)}")
+        print(f"{' ' * const}   | Prediction of node : {round(self.y_mean, self.ROUNDING_AMOUNT)}")
         print(f"{' ' * const}   | Remaining elements : {self.elements}")
         print(f"{' ' * const}   | x_mean value : {self.x_mean}")
 
     def print_tree(self):
+        """recursive function of printing tree"""
         self.print_node()
 
         if self.left is not None:
@@ -166,6 +188,7 @@ class Node:
             self.right.print_tree()
 
     def predict(self, df: pd.core.frame.DataFrame, new_column_name: str) -> pd.core.frame.DataFrame:
+        """predict value based on generated tree"""
         df[new_column_name] = 0
         for index, row in df.iterrows():
             value = self.recursive(row=row)
@@ -173,7 +196,8 @@ class Node:
         return df
 
     def recursive(self, row: pd.core.series.Series):
-        while (self.left is not None) and (self.right is not None):
+        """recursive search of y_mean"""
+        while self.left is not None and self.right is not None:
             feature = self.left.feature if self.left.feature else self.right.feature  # pick left feature, if it does not exist pick feature from right
             x_mean = self.left.x_mean if self.left.x_mean else self.right.x_mean  # pick left x_mean, if it does not exist pick x_mean from right
             if row[feature] <= x_mean:  # left
