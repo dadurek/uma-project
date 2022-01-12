@@ -18,7 +18,7 @@ def prepare_df(file_path: str, to_estimate: str, features: list, size: int) -> p
         df[ft] = pd.to_numeric(df[ft])
 
     # always pick random sample with
-    df = df.sample(size) # TODO decide if we use head() or sample()
+    df = df.head(size) # TODO decide if we use head() or sample()
 
     return df
 
@@ -34,7 +34,7 @@ def prepare_data(df: pd.core.frame.DataFrame) -> tuple:
 
 
 if __name__ == '__main__':
-    quantity_from_csv = 100
+    quantity_from_csv = 1000
     max_depth = 3
     min_elements = 3
 
@@ -53,8 +53,13 @@ if __name__ == '__main__':
 
     dataFrame = dataFrame.head(50)
 
+    new_column_name = 'estimated'
 
+    tree.predict(df=dataFrame, new_column_name=new_column_name)
 
-    tree.predict(dataFrame)
+    for index, row in dataFrame.iterrows():
+        print("real value: " + str(row[to_estimate]))
+        print("estimated value: " + str(row[new_column_name]))
+        print("-------------------")
 
 

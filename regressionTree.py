@@ -11,7 +11,7 @@ class Type(Enum):
     RIGHT = 'right'
 
 
-class Node():
+class Node:
 
     def __init__(
             self,
@@ -165,3 +165,19 @@ class Node():
         if self.right is not None:
             self.right.print_tree()
 
+    def predict(self, df: pd.core.frame.DataFrame, new_column_name: str) -> pd.core.frame.DataFrame:
+        df[new_column_name] = 0
+        for index, row in df.iterrows():
+            value = self.recursive(row=row)
+            df[new_column_name][index] = value
+        return df
+
+    def recursive(self, row: pd.core.series.Series):
+        while (self.left is not None) and (self.right is not None):
+            feature = self.left.feature if self.left.feature else self.right.feature  # pick left feature, if it does not exist pick feature from right
+            x_mean = self.left.x_mean if self.left.x_mean else self.right.x_mean  # pick left x_mean, if it does not exist pick x_mean from right
+            if row[feature] <= x_mean:  # left
+                return self.left.recursive(row=row)
+            elif row[feature] > x_mean:  # right
+                return self.right.recursive(row=row)
+        return self.y_mean
