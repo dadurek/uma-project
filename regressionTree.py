@@ -52,7 +52,7 @@ class Node:
     @staticmethod
     def __get_mse(y: list) -> float:
         """calculate mse of list"""
-        y_mean = np.mean(y)
+        y_mean = np.nanmean(y)
         elements = len(y)
         residuals = (y - y_mean) ** 2
         return np.sum(residuals) / elements
@@ -60,8 +60,12 @@ class Node:
     @staticmethod
     def __get_mse_for_two_vectors(left_y: list, right_y: list) -> float:
         """calculate mse of two lists"""
-        left_mean = np.mean(left_y)
-        right_mean = np.mean(right_y)
+        left_mean = 0
+        right_mean = 0
+        if len(left_y):
+            left_mean = np.nanmean(left_y)
+        if len(right_y):
+            right_mean = np.nanmean(right_y)
         residuals_left = left_y - left_mean
         residuals_right = right_y - right_mean
         residuals = np.concatenate((residuals_left, residuals_right), axis=None)
@@ -129,33 +133,34 @@ class Node:
 
             left_df = df[df[feature] <= x_mean].copy()
             right_df = df[df[feature] > x_mean].copy()
-            left = Node(
-                X=left_df[self.features],
-                Y=left_df['Y'].values.tolist(),
-                max_depth=self.max_depth,
-                min_elements=self.min_elements,
-                depth=self.depth + 1,
-                type=Type.LEFT,
-                x_mean=x_mean,
-                feature=feature
-            )
 
-            self.left = left
-            self.left.grow()
+            if len(left_df['Y']) >= self.min_elements:
+                left = Node(
+                    X=left_df[self.features],
+                    Y=left_df['Y'].values.tolist(),
+                    max_depth=self.max_depth,
+                    min_elements=self.min_elements,
+                    depth=self.depth + 1,
+                    type=Type.LEFT,
+                    x_mean=x_mean,
+                    feature=feature
+                )
+                self.left = left
+                self.left.grow()
 
-            right = Node(
-                right_df[self.features],
-                right_df['Y'].values.tolist(),
-                max_depth=self.max_depth,
-                min_elements=self.min_elements,
-                depth=self.depth + 1,
-                type=Type.RIGHT,
-                x_mean=x_mean,
-                feature=feature
-            )
-
-            self.right = right
-            self.right.grow()
+            if len(right_df['Y']) >= self.min_elements:
+                right = Node(
+                    right_df[self.features],
+                    right_df['Y'].values.tolist(),
+                    max_depth=self.max_depth,
+                    min_elements=self.min_elements,
+                    depth=self.depth + 1,
+                    type=Type.RIGHT,
+                    x_mean=x_mean,
+                    feature=feature
+                )
+                self.right = right
+                self.right.grow()
 
     def predict(self, df: pd.core.frame.DataFrame, new_column_name: str) -> pd.core.frame.DataFrame:
         """predict value based on generated tree"""
