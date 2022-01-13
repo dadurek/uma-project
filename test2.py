@@ -2,6 +2,7 @@ from regressionTree import *
 from helpers import *
 from regressionTree import *
 from helpers import *
+import time
 import warnings
 
 def get_error(train_df, validate_df, roulette,max_depth,min_elements):
@@ -36,21 +37,32 @@ if __name__ == '__main__':
     dataFrame.sample(frac=1)
 
     result_depth = []
+    result_depth_time = []
 
     for max_depth in range(1,32,3):
+        start = time.perf_counter()
         print("Computing for tree with max_depth = "+str(max_depth))
         result_depth.append(get_error(dataFrame.head(500),dataFrame.tail(2000),True,max_depth,min_elements))
         print("Got error = "+str(result_depth[-1]))
+        end = time.perf_counter()
+        result_depth_time.append(end-start)
+        print("Got time = " + str(result_depth_time[-1]))
 
     print(result_depth)
+    print(result_depth_time)
 
     result_elements = []
+    result_elements_time = []
     for max_elements in range(1,102,10):
-        print("Computing for tree with max_depth = "+str(max_depth))
-        result_depth.append(get_error(dataFrame.head(500),dataFrame.tail(2000),True,max_depth,min_elements))
-        print("Got error = "+str(result_depth[-1]))
+        start = time.perf_counter()
+        print("Computing for tree with max_depth = "+str(max_elements))
+        result_depth.elements(get_error(dataFrame.head(500),dataFrame.tail(2000),True,max_depth,min_elements))
+        print("Got error = "+str(result_elements[-1]))
+        end = time.perf_counter()
+        result_elements_time.append(end-start)
 
     print(result_elements)
+    print(result_elements_time)
 
 
 
