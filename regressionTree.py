@@ -167,7 +167,7 @@ class Node:
         df[new_column_name] = 0
         for index, row in df.iterrows():
             value = self.__recursive_y_mean_search(row=row)
-            df[new_column_name][index] = value
+            df.loc[index, new_column_name] = value
         return df
 
     def __recursive_y_mean_search(self, row: pd.core.series.Series):
