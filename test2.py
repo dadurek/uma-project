@@ -20,7 +20,7 @@ def get_error(train_df, validate_df, roulette,max_depth,min_elements):
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
     quantity_from_csv = 20000
-    min_elements = 5
+    min_elements = 3
     max_depth = 10
 
     file_path = "housing.csv"
@@ -39,30 +39,40 @@ if __name__ == '__main__':
     result_depth = []
     result_depth_time = []
 
-    for max_depth in range(1,32,3):
+    for max_depth in range(1,21,1):
         start = time.perf_counter()
         print("Computing for tree with max_depth = "+str(max_depth))
-        result_depth.append(get_error(dataFrame.head(500),dataFrame.tail(2000),True,max_depth,min_elements))
+        result_depth.append(get_error(dataFrame.head(10000),dataFrame.tail(2000),True,max_depth,min_elements))
         print("Got error = "+str(result_depth[-1]))
         end = time.perf_counter()
         result_depth_time.append(end-start)
         print("Got time = " + str(result_depth_time[-1]))
 
+
+    max_depth = 30
     print(result_depth)
     print(result_depth_time)
+    df = pd.DataFrame(result_depth)
+    df.to_csv('result_depth.csv')
+    df = pd.DataFrame(result_depth_time)
+    df.to_csv('result_depth_time.csv')
 
     result_elements = []
     result_elements_time = []
-    for max_elements in range(1,102,10):
+    for max_elements in range(2,103,10):
         start = time.perf_counter()
-        print("Computing for tree with max_depth = "+str(max_elements))
-        result_depth.elements(get_error(dataFrame.head(500),dataFrame.tail(2000),True,max_depth,min_elements))
+        print("Computing for tree with min_elements = "+str(max_elements))
+        result_elements.append(get_error(dataFrame.head(10000),dataFrame.tail(2000),True,max_depth,max_elements))
         print("Got error = "+str(result_elements[-1]))
         end = time.perf_counter()
         result_elements_time.append(end-start)
 
     print(result_elements)
     print(result_elements_time)
+    df = pd.DataFrame(result_elements)
+    df.to_csv('result_elements.csv')
+    df = pd.DataFrame(result_elements_time)
+    df.to_csv('result_elements_time.csv')
 
 
 
