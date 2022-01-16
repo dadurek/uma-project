@@ -23,23 +23,20 @@ if __name__ == '__main__':
     dataFrame.sample(frac=1)
     dataFrame.sample(frac=1)
 
-    result_depth = []
-    result_depth_time = []
-
-    for max_depth in range(1, 21, 1):
+    result_elements = []
+    result_elements_time = []
+    for max_elements in range(2, 103, 10):
         start = time.perf_counter()
-        print("Computing for tree with max_depth = " + str(max_depth))
-        result_depth.append(get_error(dataFrame.head(10000), dataFrame.tail(2000), True, max_depth, min_elements,
-                                      to_estimate_column_name, features_columns_name, predicted_values_column_name))
-        print("Got error = " + str(result_depth[-1]))
+        print("Computing for tree with min_elements = " + str(max_elements))
+        result_elements.append(get_error(dataFrame.head(10000), dataFrame.tail(2000), True, max_depth, max_elements,
+                                         to_estimate_column_name, features_columns_name, predicted_values_column_name))
+        print("Got error = " + str(result_elements[-1]))
         end = time.perf_counter()
-        result_depth_time.append(end - start)
-        print("Got time = " + str(result_depth_time[-1]))
+        result_elements_time.append(end - start)
 
-    max_depth = 30
-    print(result_depth)
-    print(result_depth_time)
-    df = pd.DataFrame(result_depth)
-    df.to_csv('result_depth.csv')
-    df = pd.DataFrame(result_depth_time)
-    df.to_csv('result_depth_time.csv')
+    print(result_elements)
+    print(result_elements_time)
+    df = pd.DataFrame(result_elements)
+    df.to_csv('result_elements.csv')
+    df = pd.DataFrame(result_elements_time)
+    df.to_csv('result_elements_time.csv')
