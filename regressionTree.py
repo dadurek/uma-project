@@ -73,8 +73,7 @@ class Node:
         residuals = residuals ** 2
         return np.sum(residuals) / elements
 
-    @staticmethod
-    def __pick_mse(mses: list) -> int:  # return index of picked mse
+    def __pick_mse(self, mses: list) -> int:  # return index of picked mse
         """return index of picked mse, based on value ROULETTE_ENABLED return by roulette or highest probability"""
         fitness = []
         probability = []

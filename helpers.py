@@ -18,7 +18,7 @@ def prepare_data_frame(file_path: str, columns_name: list, size: int) -> pd.core
         df[cn] = pd.to_numeric(df[cn])
 
     # always pick random sample with
-    df = df.head(size)  # TODO decide if we use head() or sample()
+    df = df.head(size)
 
     return df
 
@@ -34,6 +34,5 @@ def prepare_data(df: pd.core.frame.DataFrame, to_estimate: str, features: list, 
 
 
 def compute_error(df: pd.core.frame.DataFrame, true_value: str, predicted: str) -> float:
-    df['new'] = 0
     vector = (abs((df[true_value] - df[predicted]) / df[true_value])).to_list()
     return np.mean(vector)

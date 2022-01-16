@@ -3,7 +3,7 @@ from helpers import *
 
 
 if __name__ == '__main__':
-    quantity_from_csv = 1000
+    quantity_from_csv = 100
     max_depth = 3
     min_elements = 3
 
