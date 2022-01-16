@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import pandas as pd
 
@@ -58,10 +60,16 @@ def get_error(train_df: pd.core.frame.DataFrame, validate_df: pd.core.frame.Data
 def test_errors(values: list, roulette: bool, dataFrame: pd.core.frame.DataFrame, max_depth: int, min_elements: int,
                 to_estimate_column_name: str, features_columns_name: list, predicted_values_column_name: str):
     list_to_return = []
+    list_of_time = []
     for value in values:
         print("Computing for tree with roulette = " + str(roulette) + " and number of elements = " + str(value))
+        start = time.perf_counter()
         list_to_return.append(get_error(dataFrame.head(value), dataFrame.tail(2000), roulette, max_depth, min_elements,
                                         to_estimate_column_name, features_columns_name, predicted_values_column_name))
+        end = time.perf_counter()
+        print("Got time = " + str(end-start))
+        list_of_time.append(end-start)
+    list_to_return.append(list_of_time)
     return list_to_return
 
 
