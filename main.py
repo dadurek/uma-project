@@ -11,9 +11,11 @@ if __name__ == '__main__':
                              'households', 'median_income', 'ocean_proximity']
     predicted_values_column_name = 'prediction'
 
-    dataFrame = prepare_data_frame(file_path=file_path,
-                                   columns_name=np.concatenate((to_estimate_column_name, features_columns_name),
-                                                               axis=None), size=quantity_from_csv)
+    dataFrame = prepare_data_frame(
+        file_path=file_path,
+        columns_name=np.concatenate((to_estimate_column_name, features_columns_name), axis=None),
+        size=quantity_from_csv
+    )
 
     X, Y = prepare_data(df=dataFrame, to_estimate=to_estimate_column_name, features=features_columns_name)
 

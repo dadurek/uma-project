@@ -1,13 +1,8 @@
-# Implementation or regression tree using roulette as test
+# Implementation or regression tree using roulette to choose the split
 
 ### Authors
 - Marcin Dadura
 - Maciej Włodarczyk
-
-# Read-me
-
-This project is implementation of regression tree using roulette to choose the split. 
-
 
 # Configuration
 

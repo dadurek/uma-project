@@ -21,9 +21,26 @@ if __name__ == '__main__':
     dataFrame.sample(frac=1)
     dataFrame.sample(frac=1)
 
-    roulette = test_errors(values, True, dataFrame, max_depth, min_elements, to_estimate_column_name,
-                           features_columns_name, predicted_values_column_name)
-    normal = test_errors(values, False, dataFrame, max_depth, min_elements, to_estimate_column_name,
-                         features_columns_name, predicted_values_column_name)
+    roulette = test_errors(
+        values,
+        True,
+        dataFrame,
+        max_depth,
+        min_elements,
+        to_estimate_column_name,
+        features_columns_name,
+        predicted_values_column_name
+    )
+
+    normal = test_errors(
+        values,
+        False,
+        dataFrame,
+        max_depth,
+        min_elements,
+        to_estimate_column_name,
+        features_columns_name,
+        predicted_values_column_name
+    )
 
     print_pretty(values, roulette, normal)

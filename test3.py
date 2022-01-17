@@ -1,5 +1,3 @@
-import time
-
 from helpers import *
 from regressionTree import *
 
@@ -28,8 +26,18 @@ if __name__ == '__main__':
     for max_elements in range(2, 103, 10):
         start = time.perf_counter()
         print("Computing for tree with min_elements = " + str(max_elements))
-        result_elements.append(get_error(dataFrame.head(10000), dataFrame.tail(2000), True, max_depth, max_elements,
-                                         to_estimate_column_name, features_columns_name, predicted_values_column_name))
+        result_elements.append(
+            get_error(
+                dataFrame.head(10000),
+                dataFrame.tail(2000),
+                True,
+                max_depth,
+                max_elements,
+                to_estimate_column_name,
+                features_columns_name,
+                predicted_values_column_name
+            )
+        )
         print("Got error = " + str(result_elements[-1]))
         end = time.perf_counter()
         result_elements_time.append(end - start)
