@@ -2,10 +2,8 @@ from helpers import *
 from regressionTree import *
 
 if __name__ == '__main__':
-    quantity_from_csv = 20000
-    min_elements = 3
-    max_depth = 10
-
+    quantity_from_csv = 10000
+    min_elements = 5
     file_path = "housing.csv"
     to_estimate_column_name = "median_house_value"
     features_columns_name = ['housing_median_age', 'total_rooms', 'total_bedrooms', 'population',
@@ -31,7 +29,8 @@ if __name__ == '__main__':
             get_error(
                 dataFrame.head(10000),
                 dataFrame.tail(2000),
-                True, max_depth,
+                True,
+                max_depth,
                 min_elements,
                 to_estimate_column_name,
                 features_columns_name,

@@ -2,9 +2,8 @@ from helpers import *
 from regressionTree import *
 
 if __name__ == '__main__':
-    quantity_from_csv = 20000
-    min_elements = 3
-    max_depth = 10
+    quantity_from_csv = 10000
+    max_depth = 30
 
     file_path = "housing.csv"
     to_estimate_column_name = "median_house_value"
@@ -23,16 +22,16 @@ if __name__ == '__main__':
 
     result_elements = []
     result_elements_time = []
-    for max_elements in range(2, 103, 10):
+    for min_elements in range(2, 103, 10):
         start = time.perf_counter()
-        print("Computing for tree with min_elements = " + str(max_elements))
+        print("Computing for tree with min_elements = " + str(min_elements))
         result_elements.append(
             get_error(
                 dataFrame.head(10000),
                 dataFrame.tail(2000),
                 True,
                 max_depth,
-                max_elements,
+                min_elements,
                 to_estimate_column_name,
                 features_columns_name,
                 predicted_values_column_name
