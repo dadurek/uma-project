@@ -4,7 +4,7 @@ from regressionTree import *
 if __name__ == '__main__':
     quantity_from_csv = 10000
     min_elements = 5
-    file_path = "housing.csv"
+    file_path = "datasets/housing.csv"
     to_estimate_column_name = "median_house_value"
     features_columns_name = ['housing_median_age', 'total_rooms', 'total_bedrooms', 'population',
                              'households', 'median_income', 'ocean_proximity']

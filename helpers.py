@@ -42,6 +42,23 @@ def compute_error(df: pd.core.frame.DataFrame, true_value: str, predicted: str) 
     return np.mean(vector)
 
 
+def compute_error_mushroom(df: pd.core.frame.DataFrame, true_value: str, predicted: str, approx_value: str) -> float:
+    df[approx_value] = 0
+    for index, row in df.iterrows():
+        predicted_value = row[predicted]
+        if abs(predicted_value - ord('e')) < abs(predicted_value - ord('p')):
+            df[approx_value][index] = ord('e')
+        else:
+            df[approx_value][index] = ord('p')
+    errors_count = 0
+    for index, row in df.iterrows():
+        predicted_value = row[approx_value]
+        real_value = row[true_value]
+        if predicted_value is not real_value:
+            errors_count += 1
+    return errors_count / len(df)
+
+
 def get_error(train_df: pd.core.frame.DataFrame, validate_df: pd.core.frame.DataFrame, roulette: bool, max_depth: int,
               min_elements: int, to_estimate_column_name: str, features_columns_name: list,
               predicted_values_column_name: str):

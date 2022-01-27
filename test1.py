@@ -6,7 +6,7 @@ if __name__ == '__main__':
     min_elements = 5
     values = [10, 50, 100, 200, 500, 1000, 2000, 3000, 4000]
 
-    file_path = "housing.csv"
+    file_path = "datasets/housing.csv"
     to_estimate_column_name = "median_house_value"
     features_columns_name = ['housing_median_age', 'total_rooms', 'total_bedrooms', 'population',
                              'households', 'median_income', 'ocean_proximity']

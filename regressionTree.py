@@ -31,7 +31,7 @@ class Node:
         self.max_depth = max_depth
         self.min_elements = min_elements
         self.depth = depth if depth else 0
-        self.elements = len(Y)
+        self.length_elements = len(Y)
         self.features = self.X.columns.tolist()
         self.mse = self.__get_mse(self.Y)
         self.y_mean = np.mean(self.Y)
@@ -93,6 +93,7 @@ class Node:
     def __neighbours_mean(x: list) -> list:
         """return list of neighbours from provided list"""
         x.sort()
+        x = list(set(x)) # only unique values
         x_means = []
         for i in range(0, len(x) - 1):
             x_means.append(np.mean([x[i], x[i + 1]]))
@@ -113,21 +114,19 @@ class Node:
                 mses.append(mse)
 
         best_index = self.__pick_mse(mses)
-
-        # length of x_means, because x_mean is vector means of neighbours in X vector, so it's one element less than X or Y
-        size_x_means = len(d['Y'].to_list()) - 1
-        feature_index = int(best_index / size_x_means)
-        feature = self.features[feature_index]
-        x_mean_index = int(best_index % size_x_means)
-        x_mean = self.__neighbours_mean(d[feature].to_list())[x_mean_index]
-
-        return feature, x_mean
+        for feature in self.features:
+            x_means = self.__neighbours_mean(d[feature].to_list())
+            size = len(x_means)
+            if best_index - size < 0:
+                return feature, x_means[best_index]
+            else:
+                best_index = best_index - size
 
     def grow(self):
         """grow regression tree"""
         df = self.X.copy()
         df['Y'] = self.Y
-        if self.depth < self.max_depth and self.elements >= self.min_elements:
+        if self.depth < self.max_depth and self.length_elements >= self.min_elements:
             feature, x_mean = self.__split()
 
             left_df = df[df[feature] <= x_mean].copy()
@@ -166,7 +165,7 @@ class Node:
         df[new_column_name] = 0
         for index, row in df.iterrows():
             value = self.__recursive_y_mean_search(row=row)
-            df.loc[index, new_column_name] = value
+            df[new_column_name][index] = value
         return df
 
     def __recursive_y_mean_search(self, row: pd.core.series.Series):
@@ -195,9 +194,9 @@ class Node:
 
         print(f"{' ' * const}   | Type : {self.type.value}")
         print(f"{' ' * const}   | MSE of the node : {round(self.mse, self.ROUNDING_AMOUNT)}")
-        print(f"{' ' * const}   | Count of observations in node : {self.elements}")
+        print(f"{' ' * const}   | Count of observations in node : {self.length_elements}")
         print(f"{' ' * const}   | Prediction of node : {round(self.y_mean, self.ROUNDING_AMOUNT)}")
-        print(f"{' ' * const}   | Remaining elements : {self.elements}")
+        print(f"{' ' * const}   | Remaining elements : {self.length_elements}")
         print(f"{' ' * const}   | x_mean value : {self.x_mean}")
 
     def print_tree(self):
