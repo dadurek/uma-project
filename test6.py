@@ -41,8 +41,6 @@ if __name__ == '__main__':
         end = time.perf_counter()
         result_elements_time.append(end - start)
 
-    print(result_elements)
-    print(result_elements_time)
     df = pd.DataFrame(result_elements)
     df.to_csv('mushrooms_result_elements.csv')
     df = pd.DataFrame(result_elements_time)

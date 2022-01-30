@@ -43,9 +43,6 @@ if __name__ == '__main__':
         result_depth_time.append(end - start)
         print("Got time = " + str(result_depth_time[-1]))
 
-    max_depth = 30
-    print(result_depth)
-    print(result_depth_time)
     df = pd.DataFrame(result_depth)
     df.to_csv('mushrooms_result_depth.csv')
     df = pd.DataFrame(result_depth_time)
