@@ -10,7 +10,7 @@ if __name__ == '__main__':
                              'households', 'median_income', 'ocean_proximity']
     predicted_values_column_name = 'prediction'
 
-    dataFrame = prepare_data_frame(
+    dataFrame = prepare_data_frame_housing(
         file_path=file_path,
         columns_name=np.concatenate((to_estimate_column_name, features_columns_name), axis=None),
         size=quantity_from_csv
@@ -26,7 +26,7 @@ if __name__ == '__main__':
         start = time.perf_counter()
         print("Computing for tree with max_depth = " + str(max_depth))
         result_depth.append(
-            get_error(
+            get_error_housing(
                 dataFrame.head(10000),
                 dataFrame.tail(2000),
                 True,
@@ -46,6 +46,6 @@ if __name__ == '__main__':
     print(result_depth)
     print(result_depth_time)
     df = pd.DataFrame(result_depth)
-    df.to_csv('result_depth.csv')
+    df.to_csv('housing_result_depth.csv')
     df = pd.DataFrame(result_depth_time)
-    df.to_csv('result_depth_time.csv')
+    df.to_csv('housing_result_depth_time.csv')

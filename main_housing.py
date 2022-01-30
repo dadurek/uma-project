@@ -11,7 +11,7 @@ if __name__ == '__main__':
                              'households', 'median_income', 'ocean_proximity']
     predicted_values_column_name = 'prediction'
 
-    dataFrame = prepare_data_frame(
+    dataFrame = prepare_data_frame_housing(
         file_path=file_path,
         columns_name=np.concatenate((to_estimate_column_name, features_columns_name), axis=None),
         size=quantity_from_csv
@@ -27,11 +27,6 @@ if __name__ == '__main__':
     dataFrame = dataFrame.head(50)
 
     dataFrame = tree.predict(df=dataFrame, new_column_name=predicted_values_column_name)
-
-    for index, row in dataFrame.iterrows():
-        print("real value: " + str(row[to_estimate_column_name]))
-        print("estimated value: " + str(row[predicted_values_column_name]))
-        print("-------------------")
 
     error = compute_error(df=dataFrame, true_value=to_estimate_column_name, predicted=predicted_values_column_name)
 

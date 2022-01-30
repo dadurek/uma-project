@@ -12,7 +12,7 @@ if __name__ == '__main__':
                              'households', 'median_income', 'ocean_proximity']
     predicted_values_column_name = 'prediction'
 
-    dataFrame = prepare_data_frame(
+    dataFrame = prepare_data_frame_housing(
         file_path=file_path,
         columns_name=np.concatenate((to_estimate_column_name, features_columns_name), axis=None),
         size=quantity_from_csv
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     dataFrame.sample(frac=1)
     dataFrame.sample(frac=1)
 
-    roulette = test_errors(
+    roulette = test_errors_housing(
         values,
         True,
         dataFrame,
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         predicted_values_column_name
     )
 
-    normal = test_errors(
+    normal = test_errors_housing(
         values,
         False,
         dataFrame,

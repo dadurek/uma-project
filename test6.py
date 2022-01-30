@@ -1,21 +1,20 @@
 from helpers import *
-from regressionTree import *
 
 if __name__ == '__main__':
     quantity_from_csv = 10000
     max_depth = 30
 
-    file_path = "datasets/housing.csv"
-    to_estimate_column_name = "median_house_value"
-    features_columns_name = ['housing_median_age', 'total_rooms', 'total_bedrooms', 'population',
-                             'households', 'median_income', 'ocean_proximity']
+    file_path = "datasets/agaricus-lepiota.data"
+    columns = ["class", "cap-shape", "cap-surface", "cap-color", "bruises", "odor", "gill-attachment",
+               "gill-spacing", "gill-size", "gill-color", "stalk-shape", "stalk-root", "stalk-surface-above-ring",
+               "stalk-surface-below-ring", "stalk-color-above-ring", "stalk-color-below-ring", "veil-type",
+               "veil-color", "ring-number", "ring-type", "spore-print-color", "population", "habitat"]
+    to_estimate_column_name = "class"
+    features_columns_name = columns[1:]
     predicted_values_column_name = 'prediction'
+    approx_value_column_name = 'approx_value'
 
-    dataFrame = prepare_data_frame_housing(
-        file_path=file_path,
-        columns_name=np.concatenate((to_estimate_column_name, features_columns_name), axis=None),
-        size=quantity_from_csv
-    )
+    dataFrame = prepare_data_frame_mushrooms(file_path=file_path, columns_name=columns, size=quantity_from_csv)
 
     dataFrame.sample(frac=1)
     dataFrame.sample(frac=1)
@@ -26,7 +25,7 @@ if __name__ == '__main__':
         start = time.perf_counter()
         print("Computing for tree with min_elements = " + str(min_elements))
         result_elements.append(
-            get_error_housing(
+            get_error_mushrooms(
                 dataFrame.head(10000),
                 dataFrame.tail(2000),
                 True,
@@ -34,7 +33,8 @@ if __name__ == '__main__':
                 min_elements,
                 to_estimate_column_name,
                 features_columns_name,
-                predicted_values_column_name
+                predicted_values_column_name,
+                approx_value_column_name
             )
         )
         print("Got error = " + str(result_elements[-1]))
@@ -44,6 +44,8 @@ if __name__ == '__main__':
     print(result_elements)
     print(result_elements_time)
     df = pd.DataFrame(result_elements)
-    df.to_csv('housing_result_elements.csv')
+    df.to_csv('mushrooms_result_elements.csv')
     df = pd.DataFrame(result_elements_time)
-    df.to_csv('housing_result_elements_time.csv')
+    df.to_csv('mushrooms_result_elements_time.csv')
+
+

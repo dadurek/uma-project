@@ -1,8 +1,10 @@
 from helpers import *
 
 if __name__ == '__main__':
+    quantity_from_csv = 10000
     max_depth = 3
     min_elements = 3
+    values = [10, 50, 100, 200, 500, 1000, 2000, 3000, 4000]
 
     file_path = "datasets/agaricus-lepiota.data"
     columns = ["class", "cap-shape", "cap-surface", "cap-color", "bruises", "odor", "gill-attachment",
@@ -14,45 +16,35 @@ if __name__ == '__main__':
     predicted_values_column_name = 'prediction'
     approx_value_column_name = 'approx_value'
 
-    df = pd.read_csv(file_path, header=None)
-    df.columns = columns
+    dataFrame = prepare_data_frame_mushrooms(file_path=file_path, columns_name=columns, size=quantity_from_csv)
 
-    col_map = {}
+    dataFrame.sample(frac=1)
+    dataFrame.sample(frac=1)
 
-    for column_name in columns:
-        unique_values = list(set(df[column_name]))
-        unique_values.sort()
-        col_map[column_name] = unique_values
-        dictionary = {unique_values[i]: i for i in range(0, len(unique_values))}
-        for index, value in df[column_name].items():
-            df[column_name][index] = dictionary[value]
+    roulette = test_errors_mushrooms(
+        values,
+        True,
+        dataFrame,
+        max_depth,
+        min_elements,
+        to_estimate_column_name,
+        features_columns_name,
+        predicted_values_column_name,
+        approx_value_column_name
+    )
 
-    data_frame = df.head(1000)
+    normal = test_errors_mushrooms(
+        values,
+        False,
+        dataFrame,
+        max_depth,
+        min_elements,
+        to_estimate_column_name,
+        features_columns_name,
+        predicted_values_column_name,
+        approx_value_column_name
+    )
 
-    X = data_frame[features_columns_name]
-    Y = data_frame[to_estimate_column_name].values.tolist()
+    print_pretty(values, roulette, normal)
 
-    tree = Node(X=X,
-                Y=Y,
-                max_depth=max_depth,
-                min_elements=min_elements)
-    tree.configure(roulette_option=False,
-                   rounding_amount=3,
-                   width_print=9)
-    tree.grow()
-    tree.print_tree()
 
-    dataFrame = df.tail(500)
-
-    dataFrame = tree.predict(df=dataFrame,
-                             new_column_name=predicted_values_column_name)
-
-    confusion_matrix = compute_confusion_matrix(df=dataFrame,
-                                                true_value=to_estimate_column_name,
-                                                predicted=predicted_values_column_name,
-                                                approx_value=approx_value_column_name)
-    print(confusion_matrix)
-
-    error = compute_error_using_confusion_matrix(confusion_matrix)
-
-    print(f"ERROR: {error * 100}%")
