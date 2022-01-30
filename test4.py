@@ -1,7 +1,6 @@
 from helpers import *
 
 if __name__ == '__main__':
-    quantity_from_csv = 1000
     max_depth = 3
     min_elements = 3
 
@@ -18,35 +17,42 @@ if __name__ == '__main__':
     df = pd.read_csv(file_path, header=None)
     df.columns = columns
 
-    ###############################
-    # df = df.head(quantity_from_csv)
-    ###############################
+    col_map = {}
 
-    for index, row in df.iterrows():
-        for column, value in row.items():
-            df[column][index] = ord(value)  # change char to value in utf-8
+    for column_name in columns:
+        unique_values = list(set(df[column_name]))
+        unique_values.sort()
+        col_map[column_name] = unique_values
+        dictionary = {unique_values[i]: i for i in range(0, len(unique_values))}
+        for index, value in df[column_name].items():
+            df[column_name][index] = dictionary[value]
 
-    data_frame = df.head(800)
+    data_frame = df.head(1000)
 
     X = data_frame[features_columns_name]
     Y = data_frame[to_estimate_column_name].values.tolist()
 
-    tree = Node(X=X, Y=Y, max_depth=max_depth, min_elements=min_elements)
-    tree.configure(roulette_option=False, rounding_amount=3, width_print=9)
+    tree = Node(X=X,
+                Y=Y,
+                max_depth=max_depth,
+                min_elements=min_elements)
+    tree.configure(roulette_option=False,
+                   rounding_amount=3,
+                   width_print=9)
     tree.grow()
     tree.print_tree()
 
-    dataFrame = df.tail(200)
+    dataFrame = df.tail(500)
 
-    dataFrame = tree.predict(df=dataFrame, new_column_name=predicted_values_column_name)
+    dataFrame = tree.predict(df=dataFrame,
+                             new_column_name=predicted_values_column_name)
 
-    error = compute_error_mushroom(df=dataFrame, true_value=to_estimate_column_name, predicted=predicted_values_column_name, approx_value=approx_value_column_name)
+    confusion_matrix = compute_confusion_matrix(df=dataFrame,
+                                                true_value=to_estimate_column_name,
+                                                predicted=predicted_values_column_name,
+                                                approx_value=approx_value_column_name)
+    print(confusion_matrix)
 
-    for index, row in dataFrame.iterrows():
-        print("real value: " + str(row[to_estimate_column_name]))
-        print("estimated value: " + str(row[predicted_values_column_name]))
-        print("approxed value: " + str(row[approx_value_column_name]))
-        print("-------------------")
+    error = compute_error_using_confusion_matrix(confusion_matrix)
 
     print(f"ERROR: {error * 100}%")
-

@@ -42,21 +42,38 @@ def compute_error(df: pd.core.frame.DataFrame, true_value: str, predicted: str) 
     return np.mean(vector)
 
 
-def compute_error_mushroom(df: pd.core.frame.DataFrame, true_value: str, predicted: str, approx_value: str) -> float:
+def compute_confusion_matrix(df: pd.core.frame.DataFrame, true_value: str, predicted: str, approx_value: str) -> float:
     df[approx_value] = 0
     for index, row in df.iterrows():
         predicted_value = row[predicted]
-        if abs(predicted_value - ord('e')) < abs(predicted_value - ord('p')):
-            df[approx_value][index] = ord('e')
+        if abs(predicted_value - 0) > abs(predicted_value - 1):
+            df[approx_value][index] = 1
         else:
-            df[approx_value][index] = ord('p')
-    errors_count = 0
+            df[approx_value][index] = 0
+    tn = 0
+    fn = 0
+    fp = 0
+    tp = 0
     for index, row in df.iterrows():
-        predicted_value = row[approx_value]
-        real_value = row[true_value]
-        if predicted_value is not real_value:
-            errors_count += 1
-    return errors_count / len(df)
+        value = row[approx_value]
+        real = row[true_value]
+        if value == 0 and real == 0:
+            tn += 1
+        elif value == 0 and real == 1:
+            fn += 1
+        elif value == 1 and real == 0:
+            fp += 1
+        elif value == 1 and real == 1:
+            tp += 1
+    return np.matrix([[tn, fn], [fp, tp]])
+
+
+def compute_error_using_confusion_matrix(confusion_matrix: np.matrix):
+    tn = confusion_matrix.item((0, 0))
+    fn = confusion_matrix.item((0, 1))
+    fp = confusion_matrix.item((1, 0))
+    tp = confusion_matrix.item((1, 1))
+    return (fp + fn)/(tp + tn + fp + fn)
 
 
 def get_error(train_df: pd.core.frame.DataFrame, validate_df: pd.core.frame.DataFrame, roulette: bool, max_depth: int,
