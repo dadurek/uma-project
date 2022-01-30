@@ -162,7 +162,7 @@ def test_errors_mushrooms(values: list, roulette: bool, dataFrame: pd.core.frame
         list_to_return.append(
             get_error_mushrooms(
                 dataFrame.head(value),
-                dataFrame.tail(2000),
+                dataFrame.tail(1000),
                 roulette, max_depth,
                 min_elements,
                 to_estimate_column_name,

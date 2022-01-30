@@ -1,7 +1,7 @@
 from helpers import *
 
 if __name__ == '__main__':
-    quantity_from_csv = 10000
+    quantity_from_csv = 8124
     max_depth = 30
 
     file_path = "datasets/agaricus-lepiota.data"
@@ -26,8 +26,8 @@ if __name__ == '__main__':
         print("Computing for tree with min_elements = " + str(min_elements))
         result_elements.append(
             get_error_mushrooms(
-                dataFrame.head(10000),
-                dataFrame.tail(2000),
+                dataFrame.head(7000),
+                dataFrame.tail(1000),
                 True,
                 max_depth,
                 min_elements,
