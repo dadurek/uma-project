@@ -2,9 +2,7 @@ from helpers import *
 
 if __name__ == '__main__':
     quantity_from_csv = 10000
-    max_depth = 3
-    min_elements = 3
-    values = [10, 50, 100, 200, 500, 1000, 2000, 3000, 4000]
+    min_elements = 5
 
     file_path = "datasets/agaricus-lepiota.data"
     columns = ["class", "cap-shape", "cap-surface", "cap-color", "bruises", "odor", "gill-attachment",
